@@ -4,33 +4,35 @@ import java.util.*;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);            //Initial setup
         System.out.println("Enter Number of Columns");
         int columns = sc.nextInt();
         System.out.println("Enter Number of Lines");
         int lines = sc.nextInt();
         System.out.println("Size of Field is: " + columns + "x" + lines);
-        int[][] field = new int[columns][lines];
-        String[][] game = new String[columns][lines];
+
+        int[][] field = new int[columns][lines];        //Matrix for Solution
+        String[][] game = new String[columns][lines];   //Matrix with actual gameplaz
         int NumberOfTiles = columns * lines;
         int NumberOfMines = (int) (NumberOfTiles * 0.25f);
-        //Mines[] mines = new Mines[NumberOfMines];
-        Random rand = new Random();
+        //Mines[] mines = new Mines[NumberOfMines];     //Array of all Mines with their Coordinates(not needed for Gameplay)
+
+        Random rand = new Random();                     //Set Mines on random tiles
         for(int i = 0; i < NumberOfMines; i++){
-            //Mines mine = new Mines();
             int column = rand.nextInt(columns);
             int line = rand.nextInt(lines);
-            while(field[column][line] == 9){
+            while(field[column][line] == 9){            //reroll Mine if there already is one
                 column = rand.nextInt(columns);
                 line = rand.nextInt(lines);
             }
-            //mine.setColumn(column);
-            //mine.setLine(line);
             field[column][line] = 9;
+            //Mines mine = new Mines();                 //Initialize new Mines
+            //mine.setColumn(column);                   //stores Coordinates of all Mines
+            //mine.setLine(line);
             //mines[i]= mine;
         }
 
-        for (int i = 0; i < lines; i++) {
+        for (int i = 0; i < lines; i++) {               //calculates for every Tile how many Mines are around it
             for (int j = 0; j < columns; j++) {
                 if (field[j][i] != 9) {
                     int temp = 0;
@@ -41,21 +43,21 @@ public class Main {
                                     temp += 1;
                                 }
                             }catch (ArrayIndexOutOfBoundsException e){
-                                temp += 0;
                             }
 
                         }
                     }
-                    field[j][i] = temp;
+                    field[j][i] = temp;                 //sets the Number of Mines around it on tile
                 }
             }
         }
 
-        /*for (int i = 0; i < mines.length; i++) {
+        /*for (int i = 0; i < mines.length; i++) {      //prints all Coordinates of Mines
             System.out.println(mines[i].getColumn());
             System.out.println(mines[i].getLine());
         }*/
-        for (int i = 0; i < lines; i++) {
+
+        for (int i = 0; i < lines; i++) {               //prints solution
             System.out.print("\n");
             System.out.print(i + "\t");
             for (int j = 0; j < columns; j++) {
@@ -63,16 +65,15 @@ public class Main {
             }
         }
 
-
-        for (int i = 0; i < lines; i++) {
+        for (int i = 0; i < lines; i++) {               //Fill game field with [ ] as tiles
             for (int j = 0; j < columns; j++) {
                 game[j][i]="[ ]";
             }
         }
-        boolean gameOnGoing = true;
 
-        while (gameOnGoing){
-            for (int i = 0; i < columns; i++) {
+        boolean gameOnGoing = true;
+        while (gameOnGoing){                            //Gameloop
+            for (int i = 0; i < columns; i++) {         //prints gamefield
                 System.out.print("\t " + i );
             }
             for (int i = 0; i < lines; i++) {
@@ -83,35 +84,63 @@ public class Main {
                 }
             }
 
-            System.out.println("\n Enter Column");
+            System.out.println("\n Enter o for open or x for mine");    //Asks for gameinput
+            String OpenOrMine = sc.next();
+            System.out.println("Enter Column");
             int columnsInput = sc.nextInt();
             System.out.println("Enter Line");
             int linesInput = sc.nextInt();
 
-            if(field[columnsInput][linesInput] == 9){
+            if(OpenOrMine.equals("x")){                     //sets x if Player believes there is a mine
+                game[columnsInput][linesInput] = "[x]";
+            }
+            else if(field[columnsInput][linesInput] == 9){  //game is over when Mine is opened
                System.out.println("Game Over");
                gameOnGoing = false;
             }
-            else {
+            else {                                          //puts Number of Mines, which are around the opened tile in gamefield
                 game[columnsInput][linesInput] = "["+field[columnsInput][linesInput]+"]";
                 if (field[columnsInput][linesInput] == 0) {
-                    boolean open = true;
-                    while(open) {
-                        for (int i = 0; i < lines; i++) {
-                            for (int j = 0; j < columns; j++) {
-                                if (game[j][i].equals("[0]")) {
-                                    for (int k = i - 1; k < i + 2; k++) {
-                                        for (int l = j - 1; l < j + 2; l++) {
-                                            try {
-                                                game[l][k] = "[" + field[l][k] + "]";
-                                                if(!game[k][l].equals("[]")) {
-                                                    open = false;
-                                                }
-                                            } catch (ArrayIndexOutOfBoundsException e) {
+                    openAllAround(columns,lines,game,field);
+                }
+            }
+        }
+    }
 
-                                            }
-                                        }
+    //efficient lol
+    public static void openAllAround(int column, int line, String[][] game, int[][] field) { //opens all tilesaround 0
+        boolean open = true;
+        while (open) {
+            for (int i = 0; i < line; i++) {
+                for (int j = 0; j < column; j++) {
+                    if (game[j][i].equals("[0]")) {
+                        for (int k = i - 1; k < i + 2; k++) {
+                            for (int l = j - 1; l < j + 2; l++) {
+                                try {
+                                    game[l][k] = "[" + field[l][k] + "]";
+                                    if (!game[k][l].equals("[]")) {
+                                        open = false;
                                     }
+                                } catch (ArrayIndexOutOfBoundsException e) {
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (int i = line - 1; i > 0; i--) {
+                for (int j = column - 1; j > 0; j--) {
+                    if (game[j][i].equals("[0]")) {
+                        for (int k = i + 1; k > i - 2; k--) {
+                            for (int l = j + 1; l > j - 2; l--) {
+                                try {
+                                    game[l][k] = "[" + field[l][k] + "]";
+                                    if (!game[k][l].equals("[]")) {
+                                        open = false;
+                                    }
+                                } catch (ArrayIndexOutOfBoundsException e) {
+
                                 }
                             }
                         }
@@ -119,9 +148,5 @@ public class Main {
                 }
             }
         }
-    }
-
-    public static void openAllAround(int column, int line, String[][] game, int[][] field){
-
     }
 }
